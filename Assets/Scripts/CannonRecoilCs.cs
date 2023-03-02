@@ -6,35 +6,60 @@ public class CannonRecoilCs : MonoBehaviour
 {
     float speed;
     float recoilSpeed;
-    float recoilRestorarionSpeed;
-    float startZ;
+    float restorationAcceleration;
+    float maxRestorationSpeed;
+    Vector3 startPosition;
+    bool cannonMoving;
 
 
     void Start()
     {
         speed = 0;
         recoilSpeed = -50f;
-        recoilRestorarionSpeed = 200f;
+        restorationAcceleration = 200f;
+        maxRestorationSpeed = 20f;
+        cannonMoving = false;
 
-        startZ = transform.localPosition.z;
+        startPosition = transform.localPosition;
     }
 
 
     void Update()
     {
-        if( speed != 0 )
+        if( cannonMoving )
         {
-            transform.localPosition += Vector3.forward * speed * Time.deltaTime;
-
+            float startZ = startPosition.z;
             float distance = startZ - transform.localPosition.z;
 
-            speed = recoilRestorarionSpeed * distance * Time.deltaTime;
+            if( speed < 0 )
+            {
+                // Fase de Retroceso
+                speed += restorationAcceleration * distance * Time.deltaTime;
+            }
+
+            else {
+                // Fase de recuperación
+                speed = Mathf.Clamp( speed, 0, maxRestorationSpeed );
+
+                if( distance > 0 )
+                {
+                    Stop();
+                }
+            }
+
+            transform.localPosition += Vector3.forward * speed * Time.deltaTime;
         }
     }
 
     public void Recoil()
     {
-        // print("CannonRecoilCs.Recoil()");
         speed = recoilSpeed;
+        cannonMoving = true;
+    }
+
+    void Stop() {
+        speed = 0;
+        cannonMoving = false;
+        transform.localPosition = startPosition;
     }
 }
